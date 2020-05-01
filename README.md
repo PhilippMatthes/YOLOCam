@@ -4,6 +4,10 @@ Real time object classification of a mac os camera device video input stream wit
 
 Based on [seanchas116/SimpleDALPlugin](https://github.com/seanchas116/SimpleDALPlugin) and [johnboiles/coremediaio-dal-minimal-example](https://github.com/johnboiles/coremediaio-dal-minimal-example). 
 
+![Demo](demo.gif)
+
+Note to myself: Thank god I am only 0 to 1 percent like a chair 🪑
+
 This project uses the preconverted YOLOv3-Tiny full precision core ml model from [https://developer.apple.com/machine-learning/models/](https://developer.apple.com/machine-learning/models/).
 
 ## How to run
