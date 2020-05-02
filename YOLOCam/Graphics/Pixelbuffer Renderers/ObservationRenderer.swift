@@ -22,46 +22,28 @@
 //    SOFTWARE.
 
 import Foundation
-import AppKit
 import Vision
 
-public struct ObjectObservationRectangle {
-    let observation: VNRecognizedObjectObservation
+public struct ObservationRenderer: PixelbufferRenderer {    
+    public let observation: VNRecognizedObjectObservation
     
-    func draw(intoContext context: CGContext, withSize size: CGSize) {
+    public func render(into pixelBuffer: inout CVPixelBuffer) {
+        let width = CVPixelBufferGetWidth(pixelBuffer)
+        let height = CVPixelBufferGetHeight(pixelBuffer)
+        
         let objectBounds = VNImageRectForNormalizedRect(
-            observation.boundingBox, Int(size.width), Int(size.height)
+            observation.boundingBox, width, height
         )
         
-        context.setFillColor(CGColor(red: 0, green: 0, blue: 0, alpha: 0.1))
-        context.fill(objectBounds)
+        let rectangle = PixelbufferRectangle()
+        rectangle.render(into: &pixelBuffer, boundedBy: objectBounds)
         
         let description = observation.labels
-            .prefix(3)
-            .map {"\($0.identifier.capitalized) \(Int($0.confidence * 100))%"}
-            .joined(separator: ", ")
+        .filter {Int($0.confidence * 100) != 0}
+        .map {"\(Int($0.confidence * 100))% \($0.identifier.capitalized)"}
+        .joined(separator: ", ")
         
-        let attributedString = NSAttributedString(
-            string: description,
-            attributes: [
-                NSAttributedString.Key.foregroundColor: CGColor(
-                    red: 1, green: 1, blue: 1, alpha: 1
-                ),
-                NSAttributedString.Key.font: NSFont(name: "Arial", size: 24)!
-            ]
-        ) as CFAttributedString
-            
-        let frameSetter = CTFramesetterCreateWithAttributedString(attributedString)
-        let framePath = CGMutablePath()
-        framePath.addRect(objectBounds)
-        let currentRange = CFRangeMake(0, 0)
-        let frameRef = CTFramesetterCreateFrame(
-            frameSetter,
-            currentRange,
-            framePath,
-            nil
-        )
-        context.textMatrix = .identity
-        CTFrameDraw(frameRef, context)
+        let label = PixelbufferLabel(text: description)
+        label.render(into: &pixelBuffer, boundedBy: objectBounds)
     }
 }

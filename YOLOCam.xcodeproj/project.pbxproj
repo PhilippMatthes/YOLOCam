@@ -8,7 +8,11 @@
 
 /* Begin PBXBuildFile section */
 		BE157A22245D71C100481624 /* VideoCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE157A21245D71C100481624 /* VideoCapture.swift */; };
-		BE157A24245D80F400481624 /* ObjectObservationRectangle.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE157A23245D80F400481624 /* ObjectObservationRectangle.swift */; };
+		BE157A24245D80F400481624 /* PixelbufferRectangle.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE157A23245D80F400481624 /* PixelbufferRectangle.swift */; };
+		BE24AF2D245DA6BB00A22DB8 /* PixelbufferLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE24AF2C245DA6BB00A22DB8 /* PixelbufferLabel.swift */; };
+		BE24AF2F245DA72D00A22DB8 /* PixelbufferRenderable.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE24AF2E245DA72D00A22DB8 /* PixelbufferRenderable.swift */; };
+		BE24AF33245DAA4B00A22DB8 /* ObservationRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE24AF32245DAA4B00A22DB8 /* ObservationRenderer.swift */; };
+		BE24AF35245DAB2700A22DB8 /* PixelbufferRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE24AF34245DAB2700A22DB8 /* PixelbufferRenderer.swift */; };
 		BE8832AC2454424600326232 /* CVPixelBuffer+Tools.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE8832AB2454424600326232 /* CVPixelBuffer+Tools.swift */; };
 		BEB6B2AE245D87F500C12927 /* YOLOv3TinyInt8LUT.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = BEB6B2AD245D87F500C12927 /* YOLOv3TinyInt8LUT.mlmodel */; };
 		BEF5B53A2453D9CA00E7FC18 /* Main.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEF5B5392453D9CA00E7FC18 /* Main.swift */; };
@@ -24,7 +28,11 @@
 
 /* Begin PBXFileReference section */
 		BE157A21245D71C100481624 /* VideoCapture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoCapture.swift; sourceTree = "<group>"; };
-		BE157A23245D80F400481624 /* ObjectObservationRectangle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectObservationRectangle.swift; sourceTree = "<group>"; };
+		BE157A23245D80F400481624 /* PixelbufferRectangle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PixelbufferRectangle.swift; sourceTree = "<group>"; };
+		BE24AF2C245DA6BB00A22DB8 /* PixelbufferLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PixelbufferLabel.swift; sourceTree = "<group>"; };
+		BE24AF2E245DA72D00A22DB8 /* PixelbufferRenderable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PixelbufferRenderable.swift; sourceTree = "<group>"; };
+		BE24AF32245DAA4B00A22DB8 /* ObservationRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservationRenderer.swift; sourceTree = "<group>"; };
+		BE24AF34245DAB2700A22DB8 /* PixelbufferRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PixelbufferRenderer.swift; sourceTree = "<group>"; };
 		BE8832AB2454424600326232 /* CVPixelBuffer+Tools.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CVPixelBuffer+Tools.swift"; sourceTree = "<group>"; };
 		BEB6B2AD245D87F500C12927 /* YOLOv3TinyInt8LUT.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = YOLOv3TinyInt8LUT.mlmodel; sourceTree = "<group>"; };
 		BEF5B52F2453D9B300E7FC18 /* YOLOCam.plugin */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = YOLOCam.plugin; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -74,7 +82,8 @@
 			isa = PBXGroup;
 			children = (
 				BE8832AB2454424600326232 /* CVPixelBuffer+Tools.swift */,
-				BE157A23245D80F400481624 /* ObjectObservationRectangle.swift */,
+				BE24AF31245DAA3B00A22DB8 /* Pixelbuffer Renderers */,
+				BE24AF30245DAA3100A22DB8 /* Pixelbuffer Shapes */,
 			);
 			path = Graphics;
 			sourceTree = "<group>";
@@ -100,6 +109,25 @@
 				BEF5B54C245417B600E7FC18 /* Property.swift */,
 			);
 			path = "Virtual Camera";
+			sourceTree = "<group>";
+		};
+		BE24AF30245DAA3100A22DB8 /* Pixelbuffer Shapes */ = {
+			isa = PBXGroup;
+			children = (
+				BE157A23245D80F400481624 /* PixelbufferRectangle.swift */,
+				BE24AF2C245DA6BB00A22DB8 /* PixelbufferLabel.swift */,
+				BE24AF2E245DA72D00A22DB8 /* PixelbufferRenderable.swift */,
+			);
+			path = "Pixelbuffer Shapes";
+			sourceTree = "<group>";
+		};
+		BE24AF31245DAA3B00A22DB8 /* Pixelbuffer Renderers */ = {
+			isa = PBXGroup;
+			children = (
+				BE24AF32245DAA4B00A22DB8 /* ObservationRenderer.swift */,
+				BE24AF34245DAB2700A22DB8 /* PixelbufferRenderer.swift */,
+			);
+			path = "Pixelbuffer Renderers";
 			sourceTree = "<group>";
 		};
 		BEF5B5262453D9B300E7FC18 = {
@@ -211,11 +239,15 @@
 				BEF5B5412453F50000E7FC18 /* Object.swift in Sources */,
 				BEF5B5452454003B00E7FC18 /* Log.swift in Sources */,
 				BE8832AC2454424600326232 /* CVPixelBuffer+Tools.swift in Sources */,
+				BE24AF2F245DA72D00A22DB8 /* PixelbufferRenderable.swift in Sources */,
 				BEB6B2AE245D87F500C12927 /* YOLOv3TinyInt8LUT.mlmodel in Sources */,
+				BE24AF2D245DA6BB00A22DB8 /* PixelbufferLabel.swift in Sources */,
+				BE24AF35245DAB2700A22DB8 /* PixelbufferRenderer.swift in Sources */,
 				BE157A22245D71C100481624 /* VideoCapture.swift in Sources */,
-				BE157A24245D80F400481624 /* ObjectObservationRectangle.swift in Sources */,
+				BE157A24245D80F400481624 /* PixelbufferRectangle.swift in Sources */,
 				BEF5B547245403AF00E7FC18 /* Device.swift in Sources */,
 				BEF5B5432453FE5D00E7FC18 /* Plugin.swift in Sources */,
+				BE24AF33245DAA4B00A22DB8 /* ObservationRenderer.swift in Sources */,
 				BEF5B53A2453D9CA00E7FC18 /* Main.swift in Sources */,
 				BEF5B54D245417B600E7FC18 /* Property.swift in Sources */,
 				BEF5B54A24540C0500E7FC18 /* Stream.swift in Sources */,

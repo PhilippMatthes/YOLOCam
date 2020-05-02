@@ -140,7 +140,10 @@ extension Stream: VideoCaptureDelegate {
                 guard let observations = request.results
                     as? [VNRecognizedObjectObservation] else {return}
                 
-                self.render(observations: observations, into: &pixelBuffer)
+                for observation in observations {
+                    let renderer = ObservationRenderer(observation: observation)
+                    renderer.render(into: &pixelBuffer)
+                }
 
                 let currentTimeNsec = mach_absolute_time()
                 var timing = sampleTimingInfo
@@ -193,19 +196,6 @@ extension Stream: VideoCaptureDelegate {
             }
             
             try! requestHandler.perform([request])
-        }
-    }
-    
-    func render(
-        observations: [VNRecognizedObjectObservation],
-        into pixelBuffer: inout CVPixelBuffer
-    ) {
-        pixelBuffer.modifyWithContext { [width, height] context in
-            let size = CGSize(width: width, height: height)
-            for observation in observations {
-                let rectangle = ObjectObservationRectangle(observation: observation)
-                rectangle.draw(intoContext: context, withSize: size)
-            }
         }
     }
 }
