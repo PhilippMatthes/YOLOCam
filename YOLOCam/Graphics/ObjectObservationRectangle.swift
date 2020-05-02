@@ -22,6 +22,7 @@
 //    SOFTWARE.
 
 import Foundation
+import AppKit
 import Vision
 
 public struct ObjectObservationRectangle {
@@ -46,6 +47,7 @@ public struct ObjectObservationRectangle {
                 NSAttributedString.Key.foregroundColor: CGColor(
                     red: 1, green: 1, blue: 1, alpha: 1
                 ),
+                NSAttributedString.Key.font: NSFont(name: "Arial", size: 24)!
             ]
         ) as CFAttributedString
             
