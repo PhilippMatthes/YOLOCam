@@ -37,8 +37,9 @@ class Stream: NSObject, Object {
     let name = "YOLO Cam"
     let width = 1280
     let height = 720
-    let frameRate = 30
-
+    let webcamFrameRate = 30
+    
+    private var observations = [VNRecognizedObjectObservation]()
     private var mostRecentlyEnqueuedVNRequest: VNRequest?
     private let dispatchSemaphore = DispatchSemaphore(value: 1)
     private var sequenceNumber: UInt64 = 0
@@ -91,11 +92,11 @@ class Stream: NSObject, Object {
         kCMIOStreamPropertyFormatDescription: Property(formatDescription!),
         kCMIOStreamPropertyFormatDescriptions: Property([formatDescription!] as CFArray),
         kCMIOStreamPropertyDirection: Property(UInt32(0)),
-        kCMIOStreamPropertyFrameRate: Property(Float64(frameRate)),
-        kCMIOStreamPropertyFrameRates: Property(Float64(frameRate)),
+        kCMIOStreamPropertyFrameRate: Property(Float64(webcamFrameRate)),
+        kCMIOStreamPropertyFrameRates: Property(Float64(webcamFrameRate)),
         kCMIOStreamPropertyMinimumFrameRate: Property(Float64(0)),
         kCMIOStreamPropertyFrameRateRanges: Property(AudioValueRange(
-            mMinimum: Float64(0), mMaximum: Float64(frameRate)
+            mMinimum: Float64(0), mMaximum: Float64(webcamFrameRate)
         )),
         kCMIOStreamPropertyClock: Property(CFTypeRefWrapper(ref: clock!)),
     ]
@@ -122,65 +123,79 @@ class Stream: NSObject, Object {
 }
 
 extension Stream: VideoCaptureDelegate {
+    func dispatch(pixelBuffer: CVPixelBuffer, toStreamWithTiming timing: CMSampleTimingInfo) {
+        guard
+            let queue = queue,
+            CMSimpleQueueGetCount(queue) < CMSimpleQueueGetCapacity(queue)
+        else {return}
+        
+        let currentTimeNsec = mach_absolute_time()
+        var mutableTiming = timing
+        
+        guard CMIOStreamClockPostTimingEvent(
+            timing.presentationTimeStamp,
+            currentTimeNsec,
+            true,
+            self.clock
+        ) == noErr else {return}
+
+        var formatDescription: CMFormatDescription?
+        guard CMVideoFormatDescriptionCreateForImageBuffer(
+            allocator: kCFAllocatorDefault,
+            imageBuffer: pixelBuffer,
+            formatDescriptionOut: &formatDescription
+        ) == noErr else {return}
+
+        var sampleBufferUnmanaged: Unmanaged<CMSampleBuffer>? = nil
+        guard CMIOSampleBufferCreateForImageBuffer(
+            kCFAllocatorDefault,
+            pixelBuffer,
+            formatDescription,
+            &mutableTiming,
+            self.sequenceNumber,
+            UInt32(kCMIOSampleBufferNoDiscontinuities),
+            &sampleBufferUnmanaged
+        ) == noErr else {return}
+
+        CMSimpleQueueEnqueue(queue, element: sampleBufferUnmanaged!.toOpaque())
+        self.queueAlteredProc?(
+            self.objectID,
+            sampleBufferUnmanaged!.toOpaque(),
+            self.queueAlteredRefCon
+        )
+
+        self.sequenceNumber += 1
+    }
+    
     func videoCapture(
         _ capture: VideoCapture,
         didCapture pixelBuffer: CVPixelBuffer?,
         with sampleTimingInfo: CMSampleTimingInfo
     ) {
         guard
-            var pixelBuffer = pixelBuffer,
-            let queue = queue,
-            CMSimpleQueueGetCount(queue) < CMSimpleQueueGetCapacity(queue)
+            var pixelBuffer = pixelBuffer
         else {return}
         
+        for observation in observations {
+            let renderer = ObservationRenderer(observation: observation)
+            renderer.render(into: &pixelBuffer)
+        }
+        
+        self.dispatch(pixelBuffer: pixelBuffer, toStreamWithTiming: sampleTimingInfo)
+        
+        // Observe only once per second to reduce battery impact
+        if sequenceNumber % UInt64(webcamFrameRate) == 0 {
+            self.observeAsynchronously(onPixelBuffer: pixelBuffer)
+        }
+    }
+    
+    func observeAsynchronously(onPixelBuffer pixelBuffer: CVPixelBuffer) {
         DispatchQueue.global(qos: .userInteractive).async {
             let request = VNCoreMLRequest(model: self.visionModel) { (request, error) in
                 self.dispatchSemaphore.signal()
-                
                 guard let observations = request.results
                     as? [VNRecognizedObjectObservation] else {return}
-                
-                for observation in observations {
-                    let renderer = ObservationRenderer(observation: observation)
-                    renderer.render(into: &pixelBuffer)
-                }
-
-                let currentTimeNsec = mach_absolute_time()
-                var timing = sampleTimingInfo
-                
-                guard CMIOStreamClockPostTimingEvent(
-                    timing.presentationTimeStamp,
-                    currentTimeNsec,
-                    true,
-                    self.clock
-                ) == noErr else {return}
-
-                var formatDescription: CMFormatDescription?
-                guard CMVideoFormatDescriptionCreateForImageBuffer(
-                    allocator: kCFAllocatorDefault,
-                    imageBuffer: pixelBuffer,
-                    formatDescriptionOut: &formatDescription
-                ) == noErr else {return}
-
-                var sampleBufferUnmanaged: Unmanaged<CMSampleBuffer>? = nil
-                guard CMIOSampleBufferCreateForImageBuffer(
-                    kCFAllocatorDefault,
-                    pixelBuffer,
-                    formatDescription,
-                    &timing,
-                    self.sequenceNumber,
-                    UInt32(kCMIOSampleBufferNoDiscontinuities),
-                    &sampleBufferUnmanaged
-                ) == noErr else {return}
-
-                CMSimpleQueueEnqueue(queue, element: sampleBufferUnmanaged!.toOpaque())
-                self.queueAlteredProc?(
-                    self.objectID,
-                    sampleBufferUnmanaged!.toOpaque(),
-                    self.queueAlteredRefCon
-                )
-
-                self.sequenceNumber += 1
+                self.observations = observations
             }
             request.imageCropAndScaleOption = .scaleFill
             
